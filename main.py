@@ -1,21 +1,39 @@
 from lib import *
 
 
+def are_in_one_plane(a: Tensor, b: Tensor, c: Tensor, d: Tensor):
+    if len(a) <= 2:
+        return True
+
+
 def is_on_one_side(a, c, d, other_side=False):
     """ Рассчитать то, что точка находится по одну сторону от отрезка """
     return any(map(lambda i: (other_side and a[i] >= c[i] and a[i] >= d[i]) or (a[i] <= c[i] and a[i] <= d[i]),
                    range(len(a))))
 
 
-def calc_inf_overlap(a: Vector, b: Vector, c: Vector, d: Vector):
-    v1, v2 = get_codirectional(Vector.get_vector(a, b), Vector.get_vector(c, d))
-    if Vector.are_collinear(v1, v2) and v1.is_way_between(a, c):
-        linear_reducer = Vector.get_linear_reducer(v1)
+def calc_inf_overlap(a: Tensor, b: Tensor, c: Tensor, d: Tensor):
+    v1, v2 = get_codirectional(Tensor.get_vector(a, b), Tensor.get_vector(c, d))
+    if Tensor.are_collinear(v1, v2) and v1.is_way_between(a, c):
+        linear_reducer = Tensor.get_linear_reducer(v1)
         _a, _b, _c, _d = linear_reducer(a, b, c, d)
         return Answer(max(_a, _b) >= min(_c, _d) and max(_c, _d) >= min(_a, _b),
                       (v1 * max(_a, _b), v1 * min(_c, _d))
                       if abs(max(_a, _b) - min(_c, _d)) < abs(max(_c, _d) - min(_a, _b))
                       else (v1 * max(_c, _d), v1 * min(_a, _b)))
+    return Answer(False)
+
+
+def calc_one_point_intersection(a: Tensor, b: Tensor, c: Tensor, d: Tensor):
+    v1, v2 = get_codirectional(Tensor.get_vector(a, b), Tensor.get_vector(c, d))
+    if Tensor.are_collinear(v1, v2) and v1.is_way_between(a, c):
+        linear_reducer = Tensor.get_linear_reducer(v1)
+        _a, _b, _c, _d = linear_reducer(a, b, c, d)
+        return Answer(max(_a, _b) == min(_c, _d) or max(_c, _d) == min(_a, _b),
+                      max(_a, _b) if max(_a, _b) == min(_c, _d) else max(_c, _d))
+    elif not Tensor.are_collinear(v1, v2):
+
+        return
     return Answer(False)
 
 
@@ -27,5 +45,5 @@ def main(a, b, c, d):
 
 
 if __name__ == "__main__":
-    main(Vector(map(float, input().split())), Vector(map(float, input().split())),
-         Vector(map(float, input().split())), Vector(map(float, input().split())))
+    main(Tensor(map(float, input().split())), Tensor(map(float, input().split())),
+         Tensor(map(float, input().split())), Tensor(map(float, input().split())))

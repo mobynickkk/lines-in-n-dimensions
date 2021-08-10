@@ -1,10 +1,22 @@
-class Vector(list):
+class Tensor(list):
+    @staticmethod
+    def __is_number(x):
+        return type(x) == int or type(x) == float
+
+    def __init__(self, data):
+        _data = list(data)
+        self.depth = 1 if type(next(iter(_data))) != Tensor else next(iter(_data)).depth + 1
+        tensor = [batch if self.__is_number(batch) else Tensor(batch) for batch in _data]
+        super(Tensor, self).__init__(tensor)
+
     def __str__(self):
-        return f'({",".join(map(str, self))})'
+        inline = ', '
+        break_line = ',\n '
+        return f'({(inline if self.depth == 1 else break_line).join(map(str, self))})'
 
     @staticmethod
     def get_vector(x, y):
-        return Vector(map(lambda i: x[i] - y[i], range(len(x))))
+        return Tensor(map(lambda i: x[i] - y[i], range(len(x))))
 
     @staticmethod
     def are_collinear(x, y) -> bool:
@@ -24,12 +36,12 @@ class Vector(list):
             return self[0] / other[0]
 
     def __add__(self, other):
-        return Vector(map(lambda i: self[i] + other[i], range(len(self))))
+        return Tensor(map(lambda i: self[i] + other[i], range(len(self))))
 
     def __mul__(self, other):
         if type(other) == int or type(other) == float:
-            return Vector(map(lambda i: self[i] * other, range(len(self))))
-        elif type(other) == Vector:
+            return Tensor(map(lambda i: self[i] * other, range(len(self))))
+        elif type(other) == Tensor:
             return sum(self + other)
 
     def __neg__(self):
@@ -42,9 +54,8 @@ class Vector(list):
         except ZeroDivisionError:
             return False
 
-
-def get_codirectional(x: Vector, y: Vector):
-    if Vector.are_collinear(x, y):
-        c = x[0] / y[0]
-        return (-x, -y) if c < 0 else (x, y)
-    return x, y
+    def flatten(self):
+        if self.depth == 1:
+            return self
+        from functools import reduce
+        return Tensor(reduce(lambda a, x: a.append(x.flatten()), self, []))
