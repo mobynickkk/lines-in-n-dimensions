@@ -32,16 +32,21 @@ def calc_one_point_intersection(a: Tensor, b: Tensor, c: Tensor, d: Tensor):
         return Answer(max(_a, _b) == min(_c, _d) or max(_c, _d) == min(_a, _b),
                       max(_a, _b) if max(_a, _b) == min(_c, _d) else max(_c, _d))
     elif not Tensor.are_collinear(v1, v2):
-
+        # TODO: добавить рекурсивный расчет (до трехмерной гиперплоскости) расположения точек в одной гиперплоскости
+        #  для проверки их на возможность пересечения, а также проверку по теореме о концах отрезка
         return
     return Answer(False)
 
 
 def main(a, b, c, d):
     inf_overlap = calc_inf_overlap(a, b, c, d)
+    one_point_intersection = calc_one_point_intersection(a, b, c, d)
     if inf_overlap.value:
         x, y = inf_overlap.coords
         print(f'Бесконечное количество точек в пересечении [{x}:{y}]')
+    elif one_point_intersection.value:
+        print(f'Отрезки пересекаются в {one_point_intersection.coords}')
+    print('Нет пересечений')
 
 
 if __name__ == "__main__":

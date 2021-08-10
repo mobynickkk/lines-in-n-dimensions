@@ -3,16 +3,11 @@ class Tensor(list):
     def __is_number(x):
         return type(x) == int or type(x) == float
 
-    def __init__(self, data):
-        _data = list(data)
-        self.depth = 1 if type(next(iter(_data))) != Tensor else next(iter(_data)).depth + 1
-        tensor = [batch if self.__is_number(batch) else Tensor(batch) for batch in _data]
-        super(Tensor, self).__init__(tensor)
-
-    def __str__(self):
-        inline = ', '
-        break_line = ',\n '
-        return f'({(inline if self.depth == 1 else break_line).join(map(str, self))})'
+    @staticmethod
+    def __calc_depth(x):
+        if Tensor.__is_number(x):
+            return 0
+        return Tensor.__calc_depth(x[0]) + 1
 
     @staticmethod
     def get_vector(x, y):
@@ -30,6 +25,17 @@ class Tensor(list):
     def get_linear_reducer(base):
         get_linear_coordinate = lambda vector: vector / base
         return lambda *args: map(get_linear_coordinate, args)
+
+    def __init__(self, data):
+        _data = list(data)
+        self.depth = self.__calc_depth(_data)
+        tensor = [batch if self.__is_number(batch) else Tensor(batch) for batch in _data]
+        super(Tensor, self).__init__(tensor)
+
+    def __str__(self):
+        inline = ', '
+        break_line = ',\n '
+        return f'({(inline if self.depth == 1 else break_line).join(map(str, self))})'
 
     def __truediv__(self, other):
         if self.are_collinear(self, other):
@@ -57,5 +63,12 @@ class Tensor(list):
     def flatten(self):
         if self.depth == 1:
             return self
-        from functools import reduce
-        return Tensor(reduce(lambda a, x: a.append(x.flatten()), self, []))
+        result = []
+        for batch in self:
+            result.extend(batch.flatten())
+        return Tensor(result)
+
+
+if __name__ == '__main__':
+    x = Tensor([[1, 2], [1, 2]])
+    print(x, x.flatten(), sep='\n\n')
